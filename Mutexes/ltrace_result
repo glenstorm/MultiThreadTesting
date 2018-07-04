@@ -1,0 +1,16 @@
+% time     seconds  usecs/call     calls      function
+------ ----------- ----------- --------- --------------------
+ 21.04    0.000650         325         2 _ZN5boost6thread21start_thread_noexceptEv
+ 17.77    0.000549          45        12 pthread_mutex_init
+ 11.75    0.000363          60         6 _Znwm
+ 11.55    0.000357          51         7 pthread_cond_init
+ 11.36    0.000351         175         2 time
+  7.38    0.000228         228         1 pthread_self
+  5.47    0.000169         169         1 _ZNSt8ios_base4InitC1Ev
+  4.69    0.000145         145         1 _ZN5boost6thread13native_handleEv
+  3.11    0.000096          48         2 srand
+  2.82    0.000087          43         2 _ZN5boost6system16generic_categoryEv
+  1.65    0.000051          51         1 _ZN5boost6system15system_categoryEv
+  1.42    0.000044          44         1 __cxa_atexit
+------ ----------- ----------- --------- --------------------
+100.00    0.003090                    38 total
