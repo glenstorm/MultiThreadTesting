@@ -5,16 +5,17 @@
 #include <boost/make_shared.hpp>
 
 int main()
-{    
-    boost::shared_ptr<std::vector<int>> test_vec = boost::make_shared<std::vector<int>>();
+{
+    std::vector<int> test_vec;
     boost::shared_ptr<VectorController<int>> vc = boost::make_shared<VectorController<int>>( test_vec );
-    
-    VectorThread v1( vc );
-    boost::thread t1{ boost::ref( v1 ) };
-    
-    VectorThread v2( vc );
-    boost::thread t2{ boost::ref( v2 ) };
-    
-    t1.join();
-    t2.join();
+
+    const int thread_num = 8;
+
+	boost::thread t[thread_num];
+
+    for (int i = 0; i < thread_num; ++i)
+    	t[i] = boost::thread{ VectorThread( vc ) };
+
+ 	for (int i = 0; i < thread_num; ++i)
+    	t[i].join();
 }

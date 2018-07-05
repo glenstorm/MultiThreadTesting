@@ -8,34 +8,34 @@
 #include <boost/core/noncopyable.hpp>
 
 template<class T>
-class VectorController
+class VectorController : private boost::noncopyable
 {
 public:
-    VectorController( const boost::shared_ptr<std::vector<T>> &rw_vector )
-        :vec( rw_vector ) {}
-        
+    VectorController( std::vector<T> &rw_vector )
+        : vec( rw_vector ) {}
+
     T read() const
     {
         boost::shared_lock<boost::shared_mutex> lock{mutex};
-        if( !vec->empty() )
-            return vec->back();
-        
+        if( !vec.empty() )
+            return vec.back();
+
         return -100;
     }
-    
+
     void write( const T& val )
     {
         boost::unique_lock<boost::shared_mutex> lock{mutex};
-        vec->push_back( val );
+        vec.push_back( val );
     }
-    
+
 private:
     mutable boost::shared_mutex mutex;
-    boost::shared_ptr<std::vector<T>> vec;
+    std::vector<T>& vec;
 };
 
 
-class VectorThread
+class VectorThread : private boost::noncopyable
 {
 public:
     explicit VectorThread( const boost::shared_ptr<VectorController<int>> &_vc )
@@ -43,16 +43,15 @@ public:
     {
         srand( time( NULL ) );
     }
-    
+
     void operator()()
     {
-        for (int i = 0; i < 1000000000; ++i)
+        for (int i = 0; i < 1000000; ++i)
         {
             makeAction();
-            boost::this_thread::sleep_for( boost::chrono::milliseconds{1} );
         }
     }
-    
+
 private:
     // Записываем или считываем значение с пропорцией 95/5.
     void makeAction()
@@ -68,7 +67,7 @@ private:
             vc->write( distr );
         }
     }
-    
+
 private:
     boost::shared_ptr<VectorController<int>> vc;
 };
