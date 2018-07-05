@@ -11,6 +11,10 @@ template<class T>
 class VectorController : private boost::noncopyable
 {
 public:
+    VectorController( VectorController&& other )
+        : vec( other.vec )
+    {}
+    
     VectorController( std::vector<T> &rw_vector )
         : vec( rw_vector ) {}
 
@@ -34,11 +38,16 @@ private:
     std::vector<T>& vec;
 };
 
+static boost::mutex io_mutex;
 
 class VectorThread : private boost::noncopyable
 {
 public:
-    explicit VectorThread( const boost::shared_ptr<VectorController<int>> &_vc )
+    VectorThread( VectorThread&& other )
+        : vc( std::move( other.vc ) )
+    {}
+    
+    VectorThread( const boost::shared_ptr<VectorController<int>> &_vc )
         :vc( _vc )
     {
         srand( time( NULL ) );
@@ -56,15 +65,21 @@ private:
     // Записываем или считываем значение с пропорцией 95/5.
     void makeAction()
     {
+        boost::lock_guard<boost::mutex>{ io_mutex };
         int distr = rand() % 100;
         if( distr < 95 )
         {
-            std::cout << "Reading: " << vc->read() << std::endl;
+            int read_val = vc->read();
+            io_mutex.lock();
+            std::cout << "Reading: " << read_val << std::endl;
+            io_mutex.unlock();
         }
         else
         {
-            std::cout << "Writing: " << distr << std::endl;
             vc->write( distr );
+            io_mutex.lock();
+            std::cout << "Writing: " << distr << std::endl;
+            io_mutex.unlock();
         }
     }
 
